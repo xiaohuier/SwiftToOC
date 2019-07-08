@@ -1,0 +1,14 @@
+use_frameworks!
+
+platform :ios, '8.0'
+
+target 'OCToSwiftDemo_Example' do
+  pod 'OCToSwiftDemo', :path => '../'
+
+  target 'OCToSwiftDemo_Tests' do
+    inherit! :search_paths
+
+    
+    
+  end
+end
