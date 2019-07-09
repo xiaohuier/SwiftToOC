@@ -5,4 +5,52 @@
 首先，通过```Pod Lib Create```命令创建一个OC仓库，并且给仓库里面添加了一些OC的代码和文件，项目的目录结构大概如下:(图片1)
 
 ### Swift桥接OC
-在笔者的项目中，存在着一些动态调用的代码。。。
+
+### OC Swift方法名不一致
+在笔者的项目中，存在着一些动态转发的代码。。。
+```
+- (void)forwardInvocation:(NSInvocation *)invocation {
+	NSString *selectorName = NSStringFromSelector(invocation.selector);
+    NSArray *observeObjects = self.observeObjects[selectorName];
+    for (id obj in observeObjects) {
+			if ([obj respondsToSelector:invocation.selector]) {
+        	[invocation invokeWithTarget:obj];
+    	}
+	}
+}
+```
+比如有一个需要被转发的OC方法
+```
+- (void)filterVideoURL:(NSURL *)originalVideoURL withStreamData:(id)streamData currentBitStreamItem:(id)currentBitStreamItem completion:(void (^)(NSURL * _Nullable, NSError * _Nullable))completion
+```
+在Swift里面，会自动提示出这样的方法
+```
+open func filterVideoURL(_ originalVideoURL: URL!, with streamData: Any!, currentBitStreamItem: Any!, completion: ((URL?, Error?) -> Void)!) {}
+```
+然后再转发的时候，respondsToSelector会判断不过，因为
+oc的方法名为```filterVideoURL:withStreamData:currentBitStreamItem:completion:```
+Swift的方法名为```filterVideoURL:with:currentBitStreamItem:completion:```
+在Swift像OC转换的时候，系统自动忽略了和参数名一样的方法名部分。
+解决办法是，使用@objc()关键词，这个关键词是可以指定该方法在OC的部分看来的样子
+```@objc(filterVideoURL:withStreamData:currentBitStreamItem:completion:)```,这样写后。消息转发就可以正常进行了
+
+### 日志功能
+在SDK中，往往会有自己定制log日志格式并且输出到文件的需求，对CocoaLumberjack库进行了一系列封装，然后提供一组类似于DDLog宏，```#define SDKLogDebug(frmt, ...)``` 然后再宏里面实际的调用自己的logger的
+```
+- (void)log:(NSString *)module level:(DDLogLevel)level prefix:(NSString *)prefix format:(NSString * _Nonnull)format arguments:(va_list)argList;
+```
+
+然而在swift中，我们无法使用宏定义，虽然CocoaLumberjack本身提供了Swift版本，但是引入更多的包会增大包体积，所以把原先的SDKLogger提供一个Swift的桥接版本会比较好
+具体代码是创建一个SDKSwiftLogger类，提供如下的方法
+```
+open class MYSwiftLogging {
+    static let mouduleName = "OCToSwiftSDK"
+
+    static func logInfo(_ format: String, _ args: CVarArg...) {
+        let funcName = "\(#function) - \(#line)"
+        let arguments = getVaList(args)
+        SDKSharedLogger.log(mouduleName, level: DDLogLevel.info, prefix: funcName, format: format, arguments:arguments);
+    }
+}
+```
+最后调用就类似于NSLog的使用了，```MYSwiftLogging.logInfo("hello %@", string)```
