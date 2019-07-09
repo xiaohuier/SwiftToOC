@@ -1,22 +1,17 @@
-//
-//  SNOPLogger.m
-//  SNOnePlayer
-//
-//  Created by rockyzhang on 2018/9/25.
-//
 
-#import "PPDDLogger.h"
+
+#import "DDLogger.h"
 #import <CocoaLumberjack/CocoaLumberjack.h>
-#import "PPDDLogFormatter.h"
-#import "PPDDLogFileManager.h"
+#import "DDLogFormatter.h"
+#import "DDLogFileManager.h"
 
-@interface PPDDLogger ()
+@interface DDLogger ()
 
 @property (nonatomic, strong, nonnull) DDLog *logger;
 
 @end
 
-@implementation PPDDLogger {
+@implementation DDLogger {
     DDTTYLogger *_ttyLogger;
     DDFileLogger *_fileLogger;
 }
@@ -28,11 +23,11 @@
     if (self) {
         _logger = [[DDLog alloc] init];
         
-        PPDDLogFileManager *logFileManager = [[PPDDLogFileManager alloc] initWithLogsDirectory:NSTemporaryDirectory()];
+        DDLogFileManager *logFileManager = [[DDLogFileManager alloc] initWithLogsDirectory:NSTemporaryDirectory()];
         logFileManager.maximumNumberOfLogFiles = 2;
         _fileLogger = [[DDFileLogger alloc] initWithLogFileManager:logFileManager];
         _fileLogger.maximumFileSize = 2 * 1024 * 1024;
-        _fileLogger.logFormatter = [[PPDDLogFormatter alloc] init];
+        _fileLogger.logFormatter = [[DDLogFormatter alloc] init];
         [_logger addLogger:_fileLogger];
     }
     
@@ -56,9 +51,9 @@
     return _fileLogger.logFileManager.sortedLogFilePaths;
 }
 
-#pragma mark - SNOPLogging
+#pragma mark 
 
-- (void)log:(NSString *)module level:(SNOPLogLevel)level prefix:(NSString *)prefix format:(NSString * _Nonnull)format, ...
+- (void)log:(NSString *)module level:(DDLogLevel)level prefix:(NSString *)prefix format:(NSString * _Nonnull)format, ...
 {
     va_list vl;
     va_start(vl, format);
@@ -66,30 +61,29 @@
     va_end(vl);
 }
 
-- (void)log:(NSString *)module level:(SNOPLogLevel)level prefix:(NSString *)prefix format:(NSString * _Nonnull)format arguments:(va_list)argList
+- (void)log:(NSString *)module level:(DDLogLevel)level prefix:(NSString *)prefix format:(NSString * _Nonnull)format arguments:(va_list)argList
 {
-    [self.externalLogger log:module level:level prefix:prefix format:format arguments:argList];
     
     DDLogFlag flag = DDLogFlagInfo;
     DDLogLevel ddLevel = DDLogLevelInfo;
     switch (level) {
-        case SNOPLogLevelDebug:
+        case DDLogLevelDebug:
             flag = DDLogFlagDebug;
             ddLevel = DDLogLevelDebug;
             break;
             
-        case SNOPLogLevelInfo:
+        case DDLogLevelInfo:
             flag = DDLogFlagInfo;
             ddLevel = DDLogLevelInfo;
 
             break;
             
-        case SNOPLogLevelWarning:
+        case DDLogLevelWarning:
             flag = DDLogFlagWarning;
             ddLevel = DDLogLevelWarning;
             break;
             
-        case SNOPLogLevelError:
+        case DDLogLevelError:
             flag = DDLogFlagError;
             ddLevel = DDLogLevelError;
             break;
@@ -98,7 +92,7 @@
             break;
     }
     
-    if (!_debugLogEnable && level == SNOPLogLevelDebug) {
+    if (!_debugLogEnable && level == DDLogLevelDebug) {
         // 未开启debug日志输出，不记录debug日志
     } else {
         [self.logger log:YES

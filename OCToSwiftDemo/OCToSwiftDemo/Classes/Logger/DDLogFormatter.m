@@ -1,13 +1,8 @@
-//
-//  SNOPDDLogFormatter.m
-//  SNOnePlayer
-//
-//  Created by rockyzhang on 2018/9/26.
-//
 
-#import "PPDDLogFormatter.h"
 
-@implementation PPDDLogFormatter
+#import "DDLogFormatter.h"
+
+@implementation DDLogFormatter
 
 - (NSString *)formatLogMessage:(DDLogMessage *)logMessage
 {

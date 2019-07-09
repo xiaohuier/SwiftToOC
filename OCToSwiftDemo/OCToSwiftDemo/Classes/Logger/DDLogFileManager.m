@@ -5,9 +5,9 @@
 //  Created by rockyzhang on 2019/1/4.
 //
 
-#import "PPDDLogFileManager.h"
+#import "DDLogFileManager.h"
 
-@implementation PPDDLogFileManager
+@implementation DDLogFileManager
 
 - (NSString *)applicationName {
     return @"PPCorePlayer";
