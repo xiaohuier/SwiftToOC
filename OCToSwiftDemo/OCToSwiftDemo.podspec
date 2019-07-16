@@ -17,10 +17,7 @@ Pod::Spec.new do |s|
   s.author           = { 'eastzhou' => 'aitazzd@126.com' }
   s.source           = { :git => 'https://github.com/eastzhou'}
   
-  s.source_files = 'OCToSwiftDemo/Classes/**/*.{h,m}'
-  s.resource_bundles = {
-    'PPTVCorePlayer' => ['OCToSwiftDemo/Assets/*']
-  }
+  s.source_files = 'OCToSwiftDemo/Classes/**/*.{h,m,swift}'
   
   s.public_header_files = 'Pod/Classes/*'
   
@@ -33,9 +30,10 @@ Pod::Spec.new do |s|
     ss.dependency 'SDWebImage'
   end
   
-  s.subspec 'Logger' do |ss|
-    ss.source_files = 'Classes/Logger/**/*'
+  s.subspec 'Swift' do |ss|
+    ss.source_files = 'Classes/Swift/**/*'
     
-    ss.dependency 'CocoaLumberjack'
+    ss.dependency 'SnapKit'
   end
+  
 end

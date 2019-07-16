@@ -2,11 +2,65 @@
 ## 前言
 随着Swift版本的更新，API也越来越稳定了，所以最近笔者就把自己长期维护的OC库，开始引入Swift混编，这篇文章就是记录引入Swift的过程和遇到的问题。
 ## 创建示例的OC仓库，并且引入Swift
-首先，通过```Pod Lib Create```命令创建一个OC仓库，并且给仓库里面添加了一些OC的代码和文件，项目的目录结构大概如下:(图片1)
+首先，通过```Pod Lib Create```命令创建一个OC仓库，并且给仓库里面添加了一些OC的代码和文件，项目的目录结构大概如下:
+![list1](list1.png)
+然后开始添加一个Swift文件，把podSpec里面的source_files添加Swift文件```s.source_files = 'OCToSwiftDemo/Classes/**/*.{h,m,swift}'```
+并且把项目的Podfile加上use_modular_headers!,或者把依赖的OC库挨个加上:modular_headers => true来开启，不然在pod install的时候会给出响应的错误。这是因为Swift只能通过modular来引用其他的模块。
+这时候会产生一些编译的错误，比如原先的```  #import <Masonry.h>```  这种写法就不行了，需要改成```  #import <Masonry/Masonry.h>```
+还有一个是linker command failed，会告诉你一些swift的基本库，像UIKit之类的链接不到。。这时SDK部分已经没有问题了，是Demo编译错误了，Demo这把新建一个Swift文件来创建bridge-header文件即可
+编译通过后，来看下Pods下的Products目录下的SDk.a文件，目录结构大概是这样：
+![alist](alist.png)
+其中Modulemap文件中会产生2个module
+```
+module OCToSwiftDemo {
+  umbrella header "OCToSwiftDemo-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+
+module OCToSwiftDemo.Swift {
+  header ******/OCToSwiftDemo-Swift.h"
+  requires objc
+}
+```
+其中的OCToSwiftDemo-umbrella.h中包含了所有的OC头文件 OCToSwiftDemo-Swift.h中包含了所有Swift文件转换成OC后的代码
+代码在开发的时候，分为四种情况，主项目的OC类引用SDK中的OC类，Swift类，SDK中的OC，Swift类互相引用对方
+写法分别是这样
+主项目OC类，应用Demo中的OC类：
+```
+#import "OWViewController.h"//主项目类
+#import <OCToSwiftDemo/FirstViewController.h> //引用SDK中的OC类
+@import OCToSwiftDemo; //这种方式，既可以引用OC类，也包含Swift类
+
+@implementation OWViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    FirstViewController *vc =[[FirstViewController alloc] init];
+}
+```
+主项目OC类，引用Demo中的Swift类：
+```
+@import OCToSwiftDemo;
+
+@implementation OWViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+		
+    SecondViewController *vc1 = [[SecondViewController alloc] init];
+}
+```
+
+SDK中的OC，Swift类互相引用
 
 ### Swift桥接OC
 
-### OC Swift方法名不一致
+### OC Swift转换后的方法名不一致
 在笔者的项目中，存在着一些动态转发的代码。。。
 ```
 - (void)forwardInvocation:(NSInvocation *)invocation {
@@ -33,6 +87,134 @@ Swift的方法名为```filterVideoURL:with:currentBitStreamItem:completion:```
 在Swift像OC转换的时候，系统自动忽略了和参数名一样的方法名部分。
 解决办法是，使用@objc()关键词，这个关键词是可以指定该方法在OC的部分看来的样子
 ```@objc(filterVideoURL:withStreamData:currentBitStreamItem:completion:)```,这样写后。消息转发就可以正常进行了
+
+### block和闭包的转换
+OC中的block和Swift的闭包，苹果是会默认的去帮忙转换的。。。
+OC的block在Swift中使用:
+```
+@interface Model : NSObject
+- (void)useBlock:(void(^)(NSString *))block;
+@end
+```
+```
+let model = Model()
+model.use { (string) in
+    print("swift \(string)")
+}
+```
+
+Swift的闭包在OC中同样可以直接调用
+```
+class SwiftModel: NSObject {
+    @objc func useClosure(closure :(String) -> ()) {
+        closure("123")
+    }
+}
+```
+```
+SwiftModel *swift = [[SwiftModel alloc] init];
+    [swift useClosureWithClosure:^(NSString * _Nonnull string) {
+        NSLog(@"%@", string)
+    }];
+```
+然而在一些特殊情况下，编译器没能帮我们自动转换block和闭包，这时候就会出现问题:
+首先，在OC中定义这样的方法
+```
+typedef void (^ObserveKeyBlock)(id _Nonnull obj, _Nullable id oldVal, _Nullable id newVal);
+@protocol ModelProtocol <NSObject>
+- (NSDictionary<NSString *, ObserveKeyBlock> *)dictoryBlock;
+@end
+```
+然后
+在Swift中敲下dictionary,便会自动提示出完整的方法名
+```
+func dictionaryBlock() -> [String : (Any, Any?, Any?) -> Void] {
+        let block :ObserveKeyBlock = { (oldValue, newValue, key) in
+            print("oldValue = \(oldValue) newValue = \(newValue) key = \(key)")
+        }
+        return ["key" : block]
+    }
+```
+并且会看到这样的警告
+```
+Instance method 'dictoryBlock()' nearly matches optional requirement 'dictoryBlock()' of protocol 'ModelProtocol'
+Make 'dictoryBlock()' private to silence this warning
+```
+看起来非常的不可思议，编译器告诉我们Swift类中的dictoryBlock方法和协议里面的dictoryBlock方法名类似，建议我们使用private关键词来消除警告。。。
+然而我们就是要实现这个方法呀。。。。不管了，先加上private不看警告了吧
+OC边的调用方法如下
+```
+SwiftModel *swift = [[SwiftModel alloc] init];
+ObserveKeyBlock block = swift.dictionaryBlock[@"key"];
+block(@"1", @"2", @"key");
+```
+
+然后编译一下
+```
+*** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: '-[test.SwiftModel dictionaryBlock]: unrecognized selector sent to instance 0x6000016fc2b0'
+```
+看起来很合理，private的方法会找不到它，那去掉private，然后加上@objc
+```Method cannot be marked @objc because its result type cannot be represented in Objective-C```
+这时候编译器就会报错，说是这个方法无法被转换成OC的方法。。。。
+然后尝试着去修改了方法的参数类型，让编译器忽略他
+```
+@objc func dictionaryBlock() -> [String : Any] {
+        let block :ObserveKeyBlock = { (oldValue, newValue, key) in
+            print("oldValue = \(oldValue) newValue = \(newValue) key = \(key)")
+        }
+        return ["key" : block]
+    }
+```
+然后编译。。。
+![SwiftBlockError](BlockError.png)
+这时候就能看出来，Swift的闭包，本质上是一种特殊的函数，isa指针指向了SwiftValue这个隐藏类型。它与OC的Block不同，是需要进行转换的。。。
+转换的方法呢，就是使用@convention(block)
+```
+func dictionaryBlock() -> [String : @convention(block) (Any, Any?, Any?) -> Void] {
+        let block :ObserveKeyBlock = { (oldValue, newValue, key) in
+            print("oldValue = \(oldValue) newValue = \(newValue) key = \(key)")
+        }
+        return ["key" : block]
+    }
+```
+编译一下的结果，也可以看到被转换成了OC中的Block类型
+![SwiftBlockSuccess](SwiftBlockSuccess.png)
+
+### OC中的协议里面get和set方法在Swift中的实现
+在笔者的SDk中，大量使用了协议来对模块进行解耦，比如一个属性statusController,某些组件负责生成这个对象，某些组件负责持有这个对象，某些组件需要读取这个对象的一些值。。那么就会有这样的三个协议
+```
+@protocol StatusControllerProtocol <NSObject>
+@property (nonatomic, strong) id statusController;
+@end
+
+@protocol SetStatusControllerProtocol <NSObject>
+- (void)setStatusController:(id)statusController;
+@end
+
+@protocol GetStatusControllerProtocol <NSObject>
+- (id)statusController;
+@end
+```
+调用方大概是这样
+```
+Model *model = [[Model alloc] init];
+if ([model respondsToSelector:@selector(setStatusController:)]) {
+    [model setStatusController:statusController];
+}
+NSLog(@"%@", model.statusController);
+```
+在OC的类中，实现这三个协议方法非常的简单，因为OC中的属性等于iVar+get+set,只需要有```@property (nonatomic, strong) id statusController;```，或者使用
+```@synthesize statusController = _statusController;```，都可以一下子实现完三个方法
+
+在引入Swift后，我需要在Swift类中实现这些协议方法，这时会遇上命名的冲突
+对于StatusControllerProtocol 这个协议，非常简单，让Swift类提供```var statusController: Any```即可
+如果要实现SetStatusControllerProtocol和StatusControllerProtocol一起的话，我们只提供一个```var statusController: Any```是不行的，编译器会告诉你没有SetStatusController:的方法，是不行的。
+就算我们加上这个方法，也会在```var statusController: Any```这一行，出现```Setter for 'statusController' with Objective-C selector 'setStatusController:' conflicts with method 'setStatusController' with the same Objective-C selector```这样的编译报错。
+看来在Swift里面，属性并不等于iVar加上get，set方法这样的组合的。。。
+那么既然是Swift的方法和OC方法名的冲突，就有2个办法来修改方法名，既Swift类里面的方法名用@objc来修饰，和把OC协议里面的方法用NS_SWIFT_NAME修饰
+两个方法都是不可行的。。。。都会撞上
+![PropertySetError](PropertySetError.png)
+这么个情况，不过既然这个var就已经生成了set和get方法了。。。那么把这set方法在Swift下废弃,get方法改成属性的形式就可以了。给set方法后面加上```NS_SWIFT_UNAVAILABLE("use statusController instead")```，get方法改成```@property (nonatomic, readonly)id statusController; ```然后只需要在Swift中提供一个var就实现好了三个协议了。
 
 ### 日志功能
 在SDK中，往往会有自己定制log日志格式并且输出到文件的需求，对CocoaLumberjack库进行了一系列封装，然后提供一组类似于DDLog宏，```#define SDKLogDebug(frmt, ...)``` 然后再宏里面实际的调用自己的logger的

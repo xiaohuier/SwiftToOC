@@ -7,6 +7,8 @@
 //
 
 @import UIKit;
+#define UIColorHex(_hex_)   [UIColor colorWithHexString:((__bridge NSString *)CFSTR(#_hex_))]
+#define kWidth = 3.0
 
 @interface OWViewController : UIViewController
 

@@ -7,6 +7,8 @@
 //
 
 #import "OWViewController.h"
+//#import <OCToSwiftDemo/FirstViewController.h>
+@import OCToSwiftDemo;
 
 @interface OWViewController ()
 
@@ -17,6 +19,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    FirstViewController *vc =[[FirstViewController alloc] init];
+    SecondViewController *vc1 = [[SecondViewController alloc] init];
 	// Do any additional setup after loading the view, typically from a nib.
 }
 

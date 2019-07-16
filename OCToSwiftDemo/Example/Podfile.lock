@@ -14,23 +14,21 @@ PODS:
   - AFNetworking/Serialization (3.2.1)
   - AFNetworking/UIKit (3.2.1):
     - AFNetworking/NSURLSession
-  - CocoaLumberjack (3.5.3):
-    - CocoaLumberjack/Core (= 3.5.3)
-  - CocoaLumberjack/Core (3.5.3)
   - Masonry (1.1.0)
   - OCToSwiftDemo (0.1.0):
-    - OCToSwiftDemo/Logger (= 0.1.0)
     - OCToSwiftDemo/OC (= 0.1.0)
-  - OCToSwiftDemo/Logger (0.1.0):
-    - CocoaLumberjack
+    - OCToSwiftDemo/Swift (= 0.1.0)
   - OCToSwiftDemo/OC (0.1.0):
     - AFNetworking
     - Masonry
     - SDWebImage
     - YYKit
+  - OCToSwiftDemo/Swift (0.1.0):
+    - SnapKit
   - SDWebImage (5.0.6):
     - SDWebImage/Core (= 5.0.6)
   - SDWebImage/Core (5.0.6)
+  - SnapKit (4.2.0)
   - YYKit (1.0.9):
     - YYKit/no-arc (= 1.0.9)
   - YYKit/no-arc (1.0.9)
@@ -41,9 +39,9 @@ DEPENDENCIES:
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - AFNetworking
-    - CocoaLumberjack
     - Masonry
     - SDWebImage
+    - SnapKit
     - YYKit
 
 EXTERNAL SOURCES:
@@ -52,12 +50,12 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
-  CocoaLumberjack: 2f44e60eb91c176d471fdba43b9e3eae6a721947
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
-  OCToSwiftDemo: a433daf6e48acbd67dd2219b9199d20ab63416f2
+  OCToSwiftDemo: 13cbe24c3eb3580e7c2b88c54294fbb454181412
   SDWebImage: 920f1a2ff1ca8296ad34f6e0510a1ef1d70ac965
+  SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
   YYKit: 7cda43304a8dc3696c449041e2cb3107b4e236e7
 
-PODFILE CHECKSUM: fff7ab760b8dee05ea74feac60c77e483e8658dd
+PODFILE CHECKSUM: 2836a6037c07c3ce1d0fa5fa0b461a97beefc9c9
 
 COCOAPODS: 1.6.1
