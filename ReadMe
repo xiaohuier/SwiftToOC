@@ -2,8 +2,9 @@
 ## 前言
 随着Swift版本的更新，API也越来越稳定了，所以最近笔者就把自己长期维护的OC库，开始引入Swift混编，这篇文章就是记录引入Swift的过程和遇到的问题。
 ## 创建示例的OC仓库，并且引入Swift
-首先，通过```Pod Lib Create```命令创建一个OC仓库，并且给仓库里面添加了一些OC的代码和文件，项目的目录结构大概如下:
+首先，通过```Pod Lib Create```命令创建一个OC仓库，模块名未OCToSwiftDemo，并且给仓库里面添加了一些OC的代码和文件，项目的目录结构大概如下:
 ![list1](list1.png)
+项目分为OCToSwiftDemo部分下的主项目模块和Pods下的Development Pods，既我们要开发的SDK部分
 然后开始添加一个Swift文件，把podSpec里面的source_files添加Swift文件```s.source_files = 'OCToSwiftDemo/Classes/**/*.{h,m,swift}'```
 并且把项目的Podfile加上use_modular_headers!,或者把依赖的OC库挨个加上:modular_headers => true来开启，不然在pod install的时候会给出响应的错误。这是因为Swift只能通过modular来引用其他的模块。
 这时候会产生一些编译的错误，比如原先的```  #import <Masonry.h>```  这种写法就不行了，需要改成```  #import <Masonry/Masonry.h>```
@@ -25,40 +26,24 @@ module OCToSwiftDemo.Swift {
   requires objc
 }
 ```
-其中的OCToSwiftDemo-umbrella.h中包含了所有的OC头文件 OCToSwiftDemo-Swift.h中包含了所有Swift文件转换成OC后的代码
-代码在开发的时候，分为四种情况，主项目的OC类引用SDK中的OC类，Swift类，SDK中的OC，Swift类互相引用对方
+其中的OCToSwiftDemo-umbrella.h中包含了所有的OC头文件，OCToSwiftDemo-Swift.h中包含了所有Swift文件转换成OC后的代码
+代码在开发的时候，分为四种情况，主项目的OC类引用SDK中的OC类，Swift类和SDK中的OC，Swift类互相引用对方
 写法分别是这样
-主项目OC类，应用Demo中的OC类：
+主项目OC类，引用Demo中的类：
 ```
-#import "OWViewController.h"//主项目类
-#import <OCToSwiftDemo/FirstViewController.h> //引用SDK中的OC类
+#import <OCToSwiftDemo/FirstViewController.h> //可以引用SDK中的OC类
 @import OCToSwiftDemo; //这种方式，既可以引用OC类，也包含Swift类
-
-@implementation OWViewController
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    FirstViewController *vc =[[FirstViewController alloc] init];
-}
 ```
-主项目OC类，引用Demo中的Swift类：
+主项目中的Swift类，引用SDK中的类
 ```
-@import OCToSwiftDemo;
-
-@implementation OWViewController
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-		
-    SecondViewController *vc1 = [[SecondViewController alloc] init];
-}
+import OCToSwiftDemo
 ```
 
 SDK中的OC，Swift类互相引用
+Swift可以直接引用OC，因为他通过```OCToSwiftDemo-umbrella.h```来获取所有的OC头文件
+OC引入Swift需要```#import "OCToSwiftDemo-Swift.h"```,注意Swift的类和代码，需要使用@objc或者@objcMembers后才能被转换成OC代码
 
-### Swift桥接OC
+## 开发过程中遇到的问题
 
 ### OC Swift转换后的方法名不一致
 在笔者的项目中，存在着一些动态转发的代码。。。
@@ -153,7 +138,7 @@ block(@"1", @"2", @"key");
 ```
 *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: '-[test.SwiftModel dictionaryBlock]: unrecognized selector sent to instance 0x6000016fc2b0'
 ```
-看起来很合理，private的方法会找不到它，那去掉private，然后加上@objc
+看起来很合理，private的方法不会被转换成OC方法，那去掉private，然后加上@objc
 ```Method cannot be marked @objc because its result type cannot be represented in Objective-C```
 这时候编译器就会报错，说是这个方法无法被转换成OC的方法。。。。
 然后尝试着去修改了方法的参数类型，让编译器忽略他
@@ -167,7 +152,7 @@ block(@"1", @"2", @"key");
 ```
 然后编译。。。
 ![SwiftBlockError](BlockError.png)
-这时候就能看出来，Swift的闭包，本质上是一种特殊的函数，isa指针指向了SwiftValue这个隐藏类型。它与OC的Block不同，是需要进行转换的。。。
+这时候就能看出来，Swift的闭包，本质上是一种特殊的函数，isa指针指向了SwiftValue这个隐藏类型。它与OC的Block不同，是需要进行转换才能被OC使用的。。。
 转换的方法呢，就是使用@convention(block)
 ```
 func dictionaryBlock() -> [String : @convention(block) (Any, Any?, Any?) -> Void] {
@@ -215,14 +200,49 @@ NSLog(@"%@", model.statusController);
 两个方法都是不可行的。。。。都会撞上
 ![PropertySetError](PropertySetError.png)
 这么个情况，不过既然这个var就已经生成了set和get方法了。。。那么把这set方法在Swift下废弃,get方法改成属性的形式就可以了。给set方法后面加上```NS_SWIFT_UNAVAILABLE("use statusController instead")```，get方法改成```@property (nonatomic, readonly)id statusController; ```然后只需要在Swift中提供一个var就实现好了三个协议了。
+虽然这么写会导致单独使用SetStatusController协议的时候，Swift类会认为没有任何方法是需要实现的。。。但是提供一个```var statusController```也不会对调用有任何影响
 
-### 日志功能
+### 宏定义
+在swift中，我们无法使用宏定义好大的方法，所以都需要把他们改成具体类的方法，或者常量的形式
+#### 常量
+简单的常量，Swift会把它转换成一个常量的。。。但是复杂的不行。
+建一个新的Swift文件，把需要定义的宏常量改成对类型的拓展
+例如 在SDK中获取image,对于OC，写法如下：
+```
+#define OW_UIImageNamed(A) [UIImage OW_imageNamed:A]
+@implementation OWBundleTool
++ (NSBundle *)bundle
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSURL *url = [bundle URLForResource:@"OCToSwiftDemo" withExtension:@"bundle"];
+    return [NSBundle bundleWithURL:url];
+}
+@end
+
+@implementation UIImage (Add)
++ (UIImage *)OW_imageNamed:(NSString *)name
+{
+    UIImage *image = [UIImage imageNamed:name inBundle:[PPBundleTool bundle] compatibleWithTraitCollection:nil];
+    NSAssert(image, @"not found named %@ image, you need add to images.xcassets, and clean build", name);
+    return image;
+}
+@end
+```
+Swift中写法如下：
+```
+extension UIImage {
+    func OWImageNamed(name: String) -> UIImage {
+        UIImage(named: name, in: PPBundleTool.bundle(), compatibleWith: nil)
+    }
+}
+```
+#### 日志功能
 在SDK中，往往会有自己定制log日志格式并且输出到文件的需求，对CocoaLumberjack库进行了一系列封装，然后提供一组类似于DDLog宏，```#define SDKLogDebug(frmt, ...)``` 然后再宏里面实际的调用自己的logger的
 ```
 - (void)log:(NSString *)module level:(DDLogLevel)level prefix:(NSString *)prefix format:(NSString * _Nonnull)format arguments:(va_list)argList;
 ```
 
-然而在swift中，我们无法使用宏定义，虽然CocoaLumberjack本身提供了Swift版本，但是引入更多的包会增大包体积，所以把原先的SDKLogger提供一个Swift的桥接版本会比较好
+虽然CocoaLumberjack本身提供了Swift版本，但是引入更多的包会增大包体积，所以把原先的SDKLogger提供一个Swift的桥接版本会比较好
 具体代码是创建一个SDKSwiftLogger类，提供如下的方法
 ```
 open class MYSwiftLogging {
@@ -236,3 +256,5 @@ open class MYSwiftLogging {
 }
 ```
 最后调用就类似于NSLog的使用了，```MYSwiftLogging.logInfo("hello %@", string)```
+
+## 打包成framework
