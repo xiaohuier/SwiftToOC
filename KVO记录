@@ -1,0 +1,69 @@
+# KVO的使用崩溃记录
+## 使用场景
+有一个比较复杂的服务类service，它包含有多个业务组件Component。其中Component需要监听service的某些属性的变化，这时候就需要使用kvo来实现这个功能
+## 使用工具
+因为kvo apple提供的api过于难以使用，他将kvo的回调都放在一个方法里面，所以很需要一个对kvo的封装，把他封装出一个block的回调来使用。所以这里测试了
+YYKit库中的NSObject+YYAddForKVO.h    和FBd的FBKVOController/KVOController.h"2个库
+
+## KVOController记录
+### 场景1：
+#### 代码
+使用了KVOController，在service的KVOController添加监听service，然后将回调时间传递给Component。
+<pre>
+
+  [self.KVOController observe:self keyPath:@"value" options:NSKeyValueObservingOptionNew block:^(id  _Nullable observer, id  _Nonnull object, NSDictionary<NSString *,id> * _Nonnull change) {
+      NSInteger value = [change[NSKeyValueChangeNewKey] integerValue];
+      [weakSelf.component valueDidChange:value];
+  }];
+
+</pre>
+
+这里的使用是希望使用KVOController不需要手动移除观察者，这个特性。
+#### 结果
+service和Component均未被释放，原因是发生了循环引用，KVOController->objectInfosMap->self，self->KVOController，虽然有人视图解决这个问题https://github.com/facebook/KVOController/pull/131 但目前不好使
+
+### 场景2：
+#### 代码
+使用了KVOController，在Component的KVOController添加监听service，然后将回调时间传递给自己。
+<pre>
+
+[self.component.KVOController observe:self keyPath:@"value" options:NSKeyValueObservingOptionNew block:^(id  _Nullable observer, id  _Nonnull object, NSDictionary<NSString *,id> * _Nonnull change) {
+      NSInteger value = [change[NSKeyValueChangeNewKey] integerValue];
+      [weakSelf.component valueDidChange:value];
+  }];
+
+</pre>
+
+#### 结果
+service和Component均未被释放，原因也是发生了循环引用，KVOController会retain self，self也会retain component，component -> KVOController
+
+## KVOControllerNonRetaining记录
+既然无法使用KVOController不需要手动移除观察者，这个特性。退而求次，使用nonretain的KVOControllerNonRetaining，然后做手动移除。
+### 场景3：
+使用了KVOControllerNonRetaining，在service的KVOControllerNonRetaining添加监听service，然后将回调时间传递给Component。service的dealloc的时候，移除kvo
+#### 代码
+<pre>
+
+[self.KVOControllerNonRetaining observe:self keyPath:@"value" options:NSKeyValueObservingOptionNew block:^(id  _Nullable observer, id  _Nonnull object, NSDictionary<NSString *,id> * _Nonnull change) {
+    NSInteger value = [change[NSKeyValueChangeNewKey] integerValue];
+    [weakSelf.component valueDidChange:value];
+}];
+
+    self.deallocBlock = ^{
+        [weakSelf.KVOControllerNonRetaining unobserveAll];
+    };
+
+</pre>
+
+#### 结果
+程序发生崩溃，原因是service dealloc时未移除kvo崩溃，这里仔细检查了源码，在KVOControllerNonRetaining中，持有的objectInfosMap是一个弱引用的hashmap，当service dealloc时此时hashmap里面已经不再有这个对象了，所以dealloc时调用的[weakSelf.KVOControllerNonRetaining unobserveAll];什么事情都没发生
+
+同时，也可以看出来对象释放时，会先解除自己的引用的对象，所以Component的释放早于service，那么在component dealloc时解除kvo也不可行
+那么，service的持有者的dealloc里面释放就变成了可行, 但是这并不符合我们需要的效果，因为service可能在实际的使用时并不能被我们使用
+
+## KVOController结论
+从测试的结果什么来看，KVOController并不好用，因为在当前场景下，除非有一个和service无关的对象来进行kvo来可以
+而KVOControllerNonRetaining 也存在问题。。除非能拿到service的持有者，否则在dealloc时移除都会崩溃
+
+
+## YYAddForKVO记录

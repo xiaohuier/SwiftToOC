@@ -1,0 +1,23 @@
+kvo应用场景
+A强持有B，B弱引用A, B KVO A的一个属性
+这时候把A释放
+使用KVOController kvo未移除，发生循环引用，A B dealloc不走
+使用KVOControllerNonRetaining B的dealloc里面做移除 kvo未移除崩溃，A先dealloc B再 dealloc
+使用KVOControllerNonRetaining A的dealloc里面做移除 kvo未移除崩溃，A先dealloc B再 dealloc
+AB的dealloc里面都做移除同上
+
+A强持有B，B弱引用A, A KVO A的一个属性, 把block放在B里面
+B的dealloc使用了弱引用的KVOcontroller，发生野指针崩溃，原因https://www.jianshu.com/p/841f60876180
+使用KVOController A的dealloc里面做移除 kvo未移除，发生循环引用，A B dealloc不走
+/发现下面的情况下，_objectInfosMap里面没有数据，无法移除,原因应该是weak容器会把dealloc中的对象移除了/
+使用KVOControllerNonRetaining A的dealloc里面做移除 kvo未移除崩溃，A先dealloc B再 dealloc
+使用KVOControllerNonRetaining B的dealloc里面做移除 kvo未移除崩溃，A先dealloc B再 dealloc
+
+现在换用YYAddForKVO
+A强持有B，B弱引用A, A KVO A的一个属性, 把block放在B里面
+B的dealloc里面做移除 kvo未移除崩溃，A先dealloc B再 dealloc//原因是b dealloc时，a已经被释放
+A的dealloc里面做移除 成功
+
+A强持有B，B弱引用A, B KVO A的一个属性, 把block放在B里面
+B的dealloc里面做移除 kvo未移除崩溃，A先dealloc B再 dealloc//原因是b dealloc时，a已经被释放
+A的dealloc里面做移除 kvo未移除崩溃，A先dealloc B再 dealloc//原因不知道
