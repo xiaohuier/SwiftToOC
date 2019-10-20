@@ -61,7 +61,7 @@ HLS M3U8,苹果开发的流格式，M3U8文件用来描述视频，加载多个t
 RTMP HLV格式，能够3s内的低延迟 专门会流媒体设计的（私有）
 RTSP MP4格式，专门为流媒体设计的
 
-设计模式的区别
+# 设计模式的区别
 数据管理者，数据加工者，数据展示者
 MVC（Model-View-Controller）是最老牌的的思想，老牌到4人帮的书里把它归成了一种模式，其中Model就是作为数据管理者，View作为数据展示者，Controller作为数据加工者，Model和View又都是由Controller来根据业务需求调配，所以Controller还负担了一个数据流调配的功能。
 
@@ -118,7 +118,7 @@ Interactor是当前节点的业务类，他持有下一个节点的事件流，�
 其中播放串的部分节点的状态分为，Start，持有运营商，play接口请求，play接口解析三个子节点
 这时候会遇到多异步的场景。。。介绍下rac
 
-rac
+# rac
 RAC就是Cocoa框架下的函数响应式编程的实现。它提供了基于时间变化的数据流的组合和变化。
 函数式，和指令式相对。前者是递归，后者是for循环，他只用"表达式"，不用"语句"，没有副作用，不得修改外部变量的值。
 响应式。计算是相互的，当一个量发生变化，其他的也会连带着发生变化，他会是return self的链式调用，类似于masonry
@@ -135,7 +135,7 @@ rac的缺点，没有性能提升，函数调用堆栈长。。。学习成本�
 好处，rac是基于时间变化的数据流，那么在高异步的场景。封装好的函数实现好的功能（flattenMap，retry，dispose的使用），能节约变量和减少bug
 
 
-App 的启动
+# App 的启动
 main() 函数执行前；
 加载可执行文件 .O
 加载动态链接库，进行 rebase 指针调整和 bind 符号绑定
@@ -184,7 +184,7 @@ main() 函数执行后；
 方法级别的启动优化
 是检查首屏渲染完成前主线程上有哪些耗时方法，将没必要的耗时方法滞后或者异步执行。通常情况下，耗时较长的方法主要发生在计算大量数据的情况下，具体的表现就是加载、编辑、存储图片和文件等资源
 
-组件化
+# 组件化
 为什么要做组件化
 1.耦合比较严重（因为没有明确的约束，「组件」间引用的现象会比较多）依赖不能倒转
 2.容易出现冲突（尤其是使用 Xib，还有就是 Xcode Project，虽说有脚本可以改善）
@@ -248,7 +248,7 @@ category统一了所有的组件间调用入口，因此无论是在调试还是
 在iOS的开发中，就是以字典的方式去传递。这样就能够做到只有调用方依赖mediator，而响应方不需要依赖mediator。然而在去model化的实践中，由于这种方式自由度太大，我们至少需要保证调用方生成的参数能够被响应方理解，然而在组件化场景中，限制去model化方案的自由度的手段，相比于网络层和持久层更加容易得多。
 
 
-对象间交互模式
+# 对象间交互模式
 1.直白的对象间交互
 2.轻度抽象的对象间交互 delegate 基类
 有两种方式可以做抽象，一种是使用多态的方式，把需要调度的方法或数据写在基类中，让调度者声明基类。然后响应者派生自基类，重载基类相关方法，从而达到调度者在无需知道响应者具体类型的情况下完成调度的目的。
@@ -276,7 +276,7 @@ category统一了所有的组件间调用入口，因此无论是在调试还是
 正因为闭包可以抓取上下文，跨越命名域传递，从而使得在命名域残缺不全的情况下完成对象间交互成为可能。当然，这里的前提是闭包的参数列表里面的参数不要受命名域的影响。所以很明显，闭包的最佳使用场景就是命名域残缺不全。
 闭包方案在命名域残缺不全的同时，就带来了一个这样的限制：发起调用的地方和提供回调的地方必须要在同一上下文。
 
-分析基于ReponderChain的对象交互方式
+# 分析基于ReponderChain的对象交互方式
 这种对象交互方式的缺点显而易见，它只能对存在于Reponder Chain上的UIResponder对象起作用。
 优点倒是也有蛮多：
 以前靠delegate层层传递的方案，可以改为这种基于Responder Chain的方式来传递。在复杂UI层级的页面中，这种方式可以避免无谓的delegate声明。
@@ -286,14 +286,14 @@ category统一了所有的组件间调用入口，因此无论是在调试还是
 基于ResponderChain的对象交互方式的适用场景首先要求事件的产生和处理的对象都必须在Responder Chain上，这一点前面已经说过，我就不再赘述了。
 它的适用场景还有一个值得说的地方，就是它可以无视命名域的存在。如果采用传统的delegate层层传递的方式，由于delegate需要protocol的声明，因此就无法做到命名域隔离。但如果走Responder Chain，即使是另一个UI组件产生了事件，这个事件就可以被传递到其他组件的UI上。
 
-缩小包大小
+# 缩小包大小
 LSUnusedResources 做正则删除
 代码瘦身，使用LinkMap 结合 Mach-O 找无用代码
 合并无用的轮子
 删掉一些指令集
 
 
-iOS crash收集
+# iOS crash收集
 如何收集crash 使用Fabric收集，
 
 崩溃主要是由于 Mach 异常、Objective-C 异常（NSException）引起的，同时对于 Mach 异常，到了 BSD 层会转换为对应的 Signal 信号，那么我们也可以通过注册 signalHandler 来捕获 Crash 事件。针对 NSException 可以通过注册 NSUncaughtExceptionHandler 捕获异常信息。
@@ -318,5 +318,303 @@ PPTV crash 分类
 6.runtime 交换崩溃
 7.webview崩溃
 
+# AutoreleasePool
+@autoreleasepool {}
+AutoreleasePool 是一个先进后出的数据结构，栈 自动释放池就是一个以AutoreleasePoolPage为节点的双向链表
+objc_autoreleasePoolPush()和objc_autoreleasePoolPop(...)实际上会调用到AutoreleasePoolPage类的push()和pop()方法，
+pop 时会将这个obj指针的地址传入进去。pop 的逻辑是把 hotPage 里面装的对象依次移除并发送 release 消息（后面会详细分析），当前 page 移除完了，继续移除 parent 节点内的对象，以此反复，而移除对象操作何时停止就是到这个obj指针的地址。
+所以，push 操作加入一个 POOL_BOUNDARY 实际上就是加一个边界，pop 操作时根据边界判断范围，这就是一个入栈与出栈的过程。
 
-性能问题
+# 性能问题
+卡顿
+在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。
+
+从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。
+
+CPU 资源消耗原因和解决方案
+对象创建
+对象的创建会分配内存、调整属性、甚至还有读取文件等操作，比较消耗 CPU 资源。尽量用轻量的对象代替重量的对象，可以对性能有所优化。比如 CALayer 比 UIView 要轻量许多。
+对象调整
+对象的调整也经常是消耗 CPU 资源的地方。这里特别说一下 CALayer：CALayer 内部并没有属性，当调用属性方法时，它内部是通过运行时 resolveInstanceMethod 为对象临时添加一个方法，并把对应属性值保存到内部的一个 Dictionary 里，同时还会通知 delegate、创建动画等等，非常消耗资源。UIView 的关于显示相关的属性（比如 frame/bounds/transform）等实际上都是 CALayer 属性映射来的，所以对 UIView 的这些属性进行调整时，消耗的资源要远大于一般的属性。对此你在应用中，应该尽量减少不必要的属性修改。
+对象销毁
+对象的销毁虽然消耗资源不多，但累积起来也是不容忽视的。通常当容器类持有大量对象时，其销毁时的资源消耗就非常明显。
+布局计算
+视图布局的计算是 App 中最为常见的消耗 CPU 资源的地方。如果能在后台线程提前计算好视图布局、并且对视图布局进行缓存，那么这个地方基本就不会产生性能问题了。
+Autolayout
+Autolayout 是苹果本身提倡的技术，在大部分情况下也能很好的提升开发效率，但是 Autolayout 对于复杂视图来说常常会产生严重的性能问题。随着视图数量的增长，Autolayout 带来的 CPU 消耗会呈指数级上升。
+文本计算
+如果一个界面中包含大量文本（比如微博微信朋友圈等），文本的宽高计算会占用很大一部分资源，并且不可避免。如果你对文本显示没有特殊要求，可以参考下 UILabel 内部的实现方式：用 [NSAttributedString boundingRectWithSize:options:context:] 来计算文本宽高，用 -[NSAttributedString drawWithRect:options:context:] 来绘制文本。
+文本渲染
+屏幕上能看到的所有文本内容控件，包括 UIWebView，在底层都是通过 CoreText 排版、绘制为 Bitmap 显示的。
+图片的解码
+当你用 UIImage 或 CGImageSource 的那几个方法创建图片时，图片数据并不会立刻解码。图片设置到 UIImageView 或者 CALayer.contents 中去，并且 CALayer 被提交到 GPU 前，CGImage 中的数据才会得到解码。这一步是发生在主线程的，并且不可避免。如果想要绕开这个机制，常见的做法是在后台线程先把图片绘制到 CGBitmapContext 中，然后从 Bitmap 直接创建图片。目前常见的网络图片库都自带这个功能。
+图像的绘制
+图像的绘制通常是指用那些以 CG 开头的方法把图像绘制到画布中，然后从画布创建图片并显示这样一个过程。这个最常见的地方就是 [UIView drawRect:] 里面了。
+
+ GPU 资源消耗原因和解决方案
+ 纹理的渲染
+ 所有的 Bitmap，包括图片、文本、栅格化的内容，最终都要由内存提交到显存，绑定为 GPU Texture。不论是提交到显存的过程，还是 GPU 调整和渲染 Texture 的过程，都要消 耗不少 GPU 资源。当在较短时间显示大量图片时（比如 TableView 存在非常多的图片并且快速滑动时），CPU 占用率很低，GPU 占用非常高，界面仍然会掉帧。
+ 当图片过大，超过 GPU 的最大纹理尺寸时，图片需要先由 CPU 进行预处理，
+ 视图的混合 (Composing)
+ 当多个视图（或者说 CALayer）重叠在一起显示时，GPU 会首先把他们混合到一起。如果视图结构过于复杂，混合的过程也会消耗很多 GPU 资源。
+ 图形的生成。
+
+ 视图的混合 (Composing)
+
+ 当多个视图（或者说 CALayer）重叠在一起显示时，GPU 会首先把他们混合到一起。如果视图结构过于复杂，混合的过程也会消耗很多 GPU 资源。为了减轻这种情况的 GPU 消耗，应用应当尽量减少视图数量和层次，并在不透明的视图里标明 opaque 属性以避免无用的 Alpha 通道合成。当然，这也可以用上面的方法，把多个视图预先渲染为一张图片来显示。
+
+ 图形的生成。
+ CALayer 的 border、圆角、阴影、遮罩（mask），CASharpLayer 的矢量图形显示，通常会触发离屏渲染（offscreen rendering），而离屏渲染通常发生在 GPU 中。当一个列表视图中出现大量圆角的 CALayer，并且快速滑动时，可以观察到 GPU 资源已经占满，而 CPU 资源消耗很少。这时界面仍然能正常滑动，但平均帧数会降到很低。为了避免这种情况，可以尝试开启 CALayer.shouldRasterize 属性，但这会把原本离屏渲染的操作转嫁到 CPU 上去。
+
+block
+_NSConcreteStackBlock     栈上创建的block
+_NSConcreteMallocBlock  堆上创建的block
+_NSConcreteGlobalBlock   作为全局变量的block
+
+上面代码可以看到，当struct第一次被创建时，它是存在于该函数的栈帧上的，其Class是固定的_NSConcreteStackBlock。其捕获的变量是会赋值到结构体的成员上，所以当block初始化完成后，捕获到的变量不能更改。
+
+当函数返回时，函数的栈帧被销毁，这个block的内存也会被清除。所以在函数结束后仍然需要这个block时，就必须用Block_copy()方法将它拷贝到堆上。这个方法的核心动作很简单：申请内存，将栈数据复制过去，将Class改一下，最后向捕获到的对象发送retain，增加block的引用计数。
+
+ CFArray 和NSMutableArray
+ 最开始，CFArray 底层是用 deque(双端队列)实现的，在头部尾部进行插入删除性能很高，但是在 deque 中间插入删除时，就需要 memmove 来挪动内存了，性能就会降下来。苹果的方法是，当 CFArray 长度超过某个数值(具体来说是262040)时，将底层的 deque 换成 balanced tree。
+
+具体来说，苹果写了一个名为 CFStorage 的类，用 balanced tree 实现了大数量的数值的存储和编辑，并且在插入和删除时有很好的性能。CFArray 在长度达到阈值(262040)时，就会在底层替换为CFStorage来完成操作。
+2. 但是在2011年，CF-635.15中，苹果把这个特性去掉了。
+3.最新的 CFArray 中，代码应该又调整了。性能比单纯的双端队列高，我猜测应该换成了一个环形缓冲区。但是苹果还没有开源最新的代码。
+NSMutableArray 是双端队列
+
+Objective-C 中的消息与消息转发
+调用方法的流程
+objc_msgSend 寻找流程
+objc_object 结构体中，只有一个指向 Class 类型的 isa 指针,Class中methodLists 就是用来存放方法列表的。
+struct objc_class  中的 isa 同样是指向一个 Class 的指针。上文中，我们也知道了类对象的 isa 指针是指向元类对象的。
+类对象的类方法，是保存在元类对象中的！
+查找方法时，会先从缓存中查找，找到直接返回 ；找不到，再去 Class 的方法列表中找。在 Class 的定义中，我们可以发现 cache：说明了缓存是存在类中的，每个类都有一份方法缓存
+未找到方法时，会进行消息转发
+resolveInstanceMethod
+当根据selector没有找到对应的method时，首先会调用这个方法，在该方法中你可以为一个类添加一个方法。并返回yes。
+forwardingTargetForSelector
+如果resolveInstanceMethod没有实现，返回No，或者没有动态添加方法的话，就会执行forwardingTargetForSelector。 在这里你可以返回一个能够执行这个selector的对象otherTarget，接下来消息会重新发送到这个otherTarget。
+forwardInvocation
+如果上面两种情况没有执行，就会执行通过forwardInvocation进行消息转发。
+- (NSMethodSignature*)methodSignatureForSelector:(SEL)aSelector//判断selector是否为需要转发的，如果是则手动生成方法签名并返回。
+- (void)forwardInvocation:(NSInvocation *)anInvocation
+
+Objective-C 中的类和对象
+Objective-C 是一门面向对象的语言，对象又分为实例对象、类对象、元类对象以及根元类对象。
+myClass 是实例对象
+MyClass 是类对象 MyClass
+的元类的元类就是 NSObject 的元类
+NSObject 就是 Root class (class)
+NSObject 的 superclass 为 nil
+NSObject 的元类就是它自己
+NSObject 的元类的 superclass 就是 NSObject
+
+# RunLoop
+一般来讲，一个线程一次只能执行一个任务，执行完成后线程就会退出。如果我们需要一个机制，让线程能随时处理事件但并不退出，这种模型通常被称作 Event Loop。 Event Loop 在很多系统和框架里都有实现，比如 Node.js 的事件处理，比如 Windows 程序的消息循环，再比如 OSX/iOS 里的 RunLoop。
+OSX/iOS 系统中，提供了两个这样的对象：NSRunLoop 和 CFRunLoopRef。
+CFRunLoopRef 是在 CoreFoundation 框架内的，它提供了纯 C 函数的 API，所有这些 API 都是线程安全的。
+NSRunLoop 是基于 CFRunLoopRef 的封装，提供了面向对象的 API，但是这些 API 不是线程安全的。
+RunLoop 与线程的关系
+CFRunLoop 是基于 pthread 来管理的。
+曾经NSThread是基于pthread 的封装，但那份文档已经失效了，现在它们也有可能都是直接包装自最底层的mach thread。
+苹果不允许直接创建 RunLoop，它只提供了两个自动获取的函数：CFRunLoopGetMain() 和 CFRunLoopGetCurrent()。
+线程和 RunLoop 之间是一一对应的，其关系是保存在一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有。RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。你只能在一个线程的内部获取其 RunLoop（主线程除外）。
+
+一个 RunLoop 包含若干个 Mode，每个 Mode 又包含若干个 Source/Timer/Observer。每次调用 RunLoop 的主函数时，只能指定其中一个 Mode，这个Mode被称作 CurrentMode。如果需要切换 Mode，只能退出 Loop，再重新指定一个 Mode 进入。这样做主要是为了分隔开不同组的 Source/Timer/Observer，让其互不影响。
+
+CFRunLoopSourceRef 是事件产生的地方。Source有两个版本：Source0 和 Source1。
+• Source0 只包含了一个回调（函数指针），它并不能主动触发事件。使用时，你需要先调用 CFRunLoopSourceSignal(source)，将这个 Source 标记为待处理，然后手动调用 CFRunLoopWakeUp(runloop) 来唤醒 RunLoop，让其处理这个事件。
+• Source1 包含了一个 mach_port 和一个回调（函数指针），被用于通过内核和其他线程相互发送消息。这种 Source 能主动唤醒 RunLoop 的线程，其原理在下面会讲到。
+
+CFRunLoopTimerRef 是基于时间的触发器，它和 NSTimer 是toll-free bridged 的，可以混用。其包含一个时间长度和一个回调（函数指针）。当其加入到 RunLoop 时，RunLoop会注册对应的时间点，当时间点到时，RunLoop会被唤醒以执行那个回调。
+
+CFRunLoopObserverRef 是观察者，每个 Observer 都包含了一个回调（函数指针），当 RunLoop 的状态发生变化时，观察者就能通过回调接受到这个变化。可以观测的时间点有以下几个：
+typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
+    kCFRunLoopEntry         = (1UL << 0), // 即将进入Loop
+    kCFRunLoopBeforeTimers  = (1UL << 1), // 即将处理 Timer
+    kCFRunLoopBeforeSources = (1UL << 2), // 即将处理 Source
+    kCFRunLoopBeforeWaiting = (1UL << 5), // 即将进入休眠
+    kCFRunLoopAfterWaiting  = (1UL << 6), // 刚从休眠中唤醒
+    kCFRunLoopExit          = (1UL << 7), // 即将退出Loop
+};
+上面的 Source/Timer/Observer 被统称为 mode item，一个 item 可以被同时加入多个 mode。但一个 item 被重复加入同一个 mode 时是不会有效果的。如果一个 mode 中一个 item 都没有，则 RunLoop 会直接退出，不进入循环。
+
+系统默认注册了5个Mode:
+1. kCFRunLoopDefaultMode: App的默认 Mode，通常主线程是在这个 Mode 下运行的。
+2. UITrackingRunLoopMode: 界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响。
+3. UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用。
+4: GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到。
+5: kCFRunLoopCommonModes: 这是一个占位的 Mode，没有实际作用
+
+runloop的应用
+AutoreleasePool
+App启动后，苹果在主线程 RunLoop 里注册了两个 Observer，其回调都是 _wrapRunLoopWithAutoreleasePoolHandler()。
+第一个 Observer 监视的事件是 Entry(即将进入Loop)，其回调内会调用 _objc_autoreleasePoolPush() 创建自动释放池。其 order 是-2147483647，优先级最高，保证创建释放池发生在其他所有回调之前。
+第二个 Observer 监视了两个事件： BeforeWaiting(准备进入休眠) 时调用_objc_autoreleasePoolPop() 和 _objc_autoreleasePoolPush() 释放旧的池并创建新池；Exit(即将退出Loop) 时调用 _objc_autoreleasePoolPop() 来释放自动释放池。这个 Observer 的 order 是 2147483647，优先级最低，保证其释放池子发生在其他所有回调之后。
+
+事件响应
+苹果注册了一个 Source1 (基于 mach port 的) 用来接收系统事件，其回调函数为 __IOHIDEventSystemClientQueueCallback()。
+_UIApplicationHandleEventQueue() 会把 IOHIDEvent 处理并包装成 UIEvent 进行处理或分发，其中包括识别 UIGesture/处理屏幕旋转/发送给 UIWindow 等。通常事件比如 UIButton 点击、touchesBegin/Move/End/Cancel 事件都是在这个回调中完成的。
+
+手势识别
+当上面的 _UIApplicationHandleEventQueue() 识别了一个手势时，其首先会调用 Cancel 将当前的 touchesBegin/Move/End 系列回调打断。随后系统将对应的 UIGestureRecognizer 标记为待处理。
+苹果注册了一个 Observer 监测 BeforeWaiting (Loop即将进入休眠) 事件，这个Observer的回调函数是 _UIGestureRecognizerUpdateObserver()，其内部会获取所有刚被标记为待处理的 GestureRecognizer，并执行GestureRecognizer的回调。
+
+界面更新
+当在操作 UI 时，比如改变了 Frame、更新了 UIView/CALayer 的层次时，或者手动调用了 UIView/CALayer 的 setNeedsLayout/setNeedsDisplay方法后，这个 UIView/CALayer 就被标记为待处理，并被提交到一个全局的容器去。
+
+苹果注册了一个 Observer 监听 BeforeWaiting(即将进入休眠) 和 Exit (即将退出Loop) 事件，回调去执行一个很长的函数：
+_ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()。这个函数里会遍历所有待处理的 UIView/CAlayer 以执行实际的绘制和调整，并更新 UI 界面。
+
+定时器
+NSTimer 其实就是 CFRunLoopTimerRef，他们之间是 toll-free bridged 的。一个 NSTimer 注册到 RunLoop 后，RunLoop 会为其重复的时间点注册好事件。例如 10:00, 10:10, 10:20 这几个时间点。RunLoop为了节省资源，并不会在非常准确的时间点回调这个Timer。Timer 有个属性叫做 Tolerance (宽容度)，标示了当时间点到后，容许有多少最大误差。
+
+CADisplayLink 是一个和屏幕刷新率一致的定时器（但实际实现原理更复杂，和 NSTimer 并不一样，其内部实际是操作了一个 Source）。如果在两次屏幕刷新之间执行了一个长任务，那其中就会有一帧被跳过去（和 NSTimer 相似），造成界面卡顿的感觉。在快速滑动TableView时，即使一帧的卡顿也会让用户有所察觉。Facebook 开源的 AsyncDisplayLink 就是为了解决界面卡顿的问题，其内部也用到了 RunLoop
+
+PerformSelecter
+当调用 NSObject 的 performSelecter:afterDelay: 后，实际上其内部会创建一个 Timer 并添加到当前线程的 RunLoop 中。所以如果当前线程没有 RunLoop，则这个方法会失效。
+当调用 performSelector:onThread: 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 RunLoop 该方法也会失效。
+
+关于GCD
+GCD 提供的某些接口也用到了 RunLoop， 例如 dispatch_async()。
+当调用 dispatch_async(dispatch_get_main_queue(), block) 时，libDispatch 会向主线程的 RunLoop 发送消息，RunLoop会被唤醒，并从消息中取得这个 block，并在回调 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__() 里执行这个 block。但这个逻辑仅限于 dispatch 到主线程，dispatch 到其他线程仍然是由 libDispatch 处理的。
+NSURLConnectionLoader 中的 RunLoop 通过一些基于 mach port 的 Source 接收来自底层 CFSocket 的通知。当收到通知后，其会在合适的时机向 CFMultiplexerSource 等 Source0 发送通知，同时唤醒 Delegate 线程的 RunLoop 来让其处理这些通知。CFMultiplexerSource 会在 Delegate 线程的 RunLoop 对 Delegate 执行实际的回调。
+
+实际应用
+AFNetworking 单独创建了一个线程，并在这个线程中启动了一个 RunLoop：
+ASDK 仿照 QuartzCore/UIKit 框架的模式，实现了一套类似的界面更新的机制：即在主线程的 RunLoop 中添加一个 Observer，监听了 kCFRunLoopBeforeWaiting 和 kCFRunLoopExit 事件，在收到回调时，遍历所有之前放入队列的待处理的任务，然后一一执行。
+
+# iOS中的锁
+自旋锁OSSpinLock
+自旋锁的实现思路很简单，理论上来说只要定义一个全局变量，用来表示锁的可用情况即可
+在 while 循环中，线程处于忙等状态，白白浪费 CPU 时间，最终因为超时被操作系统抢占时间片。如果临界区执行时间较长，比如是文件读写，这种忙等是毫无必要的。
+信号量dispatch_semaphore_t
+首先会把信号量的值减一，并判断是否大于零。如果大于零，说明不用等待，所以立刻返回，调用到 SYS_futex 这个系统调用，使线程进入睡眠状态，主动让出时间片
+主动让出时间片并不总是代表效率高。让出时间片会导致操作系统切换到另一个线程，这种上下文切换通常需要 10 微秒左右，而且至少需要两次切换。如果等待时间很短，比如只有几个微秒，忙等就比线程睡眠更高效。
+
+pthread_mutex 表示互斥锁。互斥锁的实现原理与信号量非常相似，不是使用忙等，而是阻塞线程并睡眠，需要进行上下文切换。
+一般情况下，一个线程只能申请一次锁，也只能在获得锁的情况下才能释放锁，多次申请锁或释放未获得的锁都会导致崩溃。假设在已经获得锁的情况下再次申请锁，线程会因为等待锁的释放而进入睡眠状态，因此就不可能再释放锁，从而导致死锁。
+然而这种情况经常会发生，比如某个函数申请了锁，在临界区内又递归调用了自己。辛运的是 pthread_mutex 支持递归锁，也就是允许一个线程递归的申请锁，只要把 attr 的类型改成 PTHREAD_MUTEX_RECURSIVE 即可。
+
+NSLock 只是在内部封装了一个 pthread_mutex，属性为 PTHREAD_MUTEX_ERRORCHECK，它会损失一定性能换来错误提示。
+这里使用宏定义的原因是，OC 内部还有其他几种锁，他们的 lock 方法都是一模一样，仅仅是内部 pthread_mutex 互斥锁的类型不同。通过宏定义，可以简化方法的定义。
+
+synchronized这其实是一个 OC 层面的锁， 主要是通过牺牲性能换来语法上的简洁与可读。
+
+我们知道 @synchronized 后面需要紧跟一个 OC 对象，它实际上是把这个对象当做锁来使用。这是通过一个哈希表来实现的，OC 在底层使用了一个互斥锁的数组(你可以理解为锁池)，通过对对象去哈希值来得到对应的互斥锁。
+
+# iOS多线程
+进程
+进程（Process）是计算机中的程序关于某数据集合上的一次运行活动，是系统进行资源分配和调度的基本单位，是操作系统结构的基础，每一个进程都有自己独立的虚拟内存空间。
+简单来说，进程是指在系统中正在运行的一个应用程序，每一个程序都是一个进程，并且进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内。
+
+线程
+线程，是程序执行流的最小单元线程是程序中一个单一的顺序控制流程。是进程内一个相对独立的、可调度的执行单元，是系统独立调度和分派CPU的基本单位指运行中的程序的调度单位。
+简单来说，1个进程要想执行任务，必须得有线程。
+线程中任务的执行是串行的，要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务，也就是说，在同一时间内，1个线程只能执行1个任务，由此可以理解线程是进程中的1条执行路径。
+一个进程中至少包含一条线程，即主线程，创建线程的目的就是为了开启一条新的执行路径，运行指定的代码，与主线程中的代码实现同时运行。
+
+线程
+多线程（multithreading），是指从软件或者硬件上实现多个线程并发执行的技术。具有多线程能力的计算机因有硬件支持而能够在同一时间执行多于一个线程，进而提升整体处理性能。
+原理：
+同一时间，CPU只能处理1条线程，只有1条线程在工作（执行）
+多线程并发（同时）执行，其实是CPU快速地在多条线程之间调度（切换）
+如果CPU调度线程的时间足够快，就造成了多线程并发执行的假象
+注意：多线程并发，并不是cpu在同一时刻同时执行多个任务，只是CPU调度足够快，造成的假象。
+NSThread
+GCD（Grand Central Dispatch） 是苹果为多核并行运算提出的C语言并发技术框架。
+GCD会自动利用更多的CPU内核；
+会自动管理线程的生命周期（创建线程，调度任务，销毁线程等）；
+程序员只需要告诉 GCD 想要如何执行什么任务，不需要编写任何线程管理代码。
+
+队列
+串行队列：串行队列一次只调度一个任务，一个任务完成后再调度下一个任务。DISPATCH_QUEUE_SERIAL
+并发队列：并发队列可以同时调度多个任务，调度任务的方式，取决于执行任务的函数；并发功能只有在异步的（dispatch_async）函数下才有效；异步状态下，开启的线程上线由GCD底层决定。DISPATCH_QUEUE_CONCURRENT
+主队列：主队列负责在主线程上调度任务，如果在主线程上有任务执行，会等待主线程空闲后再调度任务执行。主队列用于UI以及触摸事件等的操作，我们在进行线程间通信，通常是返回主线程更新UI的时候使用到。
+全局并发队列：全局并发队列是由苹果API提供的，方便程序员使用多线程。dispatch_get_global_queue
+
+dispatch_sync任务被添加到队列后，会当前线程被调度；队列中的任务同步执行完成后，才会调度后续任务。
+在主线程中，向主队列添加同步任务，会造成死锁。
+在其他线程中，向主队列向主队列添加同步任务，则会在主线程中同步执行。
+异步dispatch_async 是多线程的代名词,当任务被添加到主队列后，会等待主线程空闲时才会调度该任务；添加到其他线程时，会开启新的线程调度任务。
+dispatch_group_t 需要在多个耗时操作执行完毕之后，再统一做后续处理。
+
+NSOperation
+
+NSOperation是苹果推荐使用的并发技术，它提供了一些用GCD不是很好实现的功能。NSOperation是基于GCD的面向对象的使用OC语言的封装。相比GCD，NSOperation的使用更加简单。NSOperation是一个抽象类，也就是说它并不能直接使用，而是应该使用它的子类。使用它的子类的方法有三种，使用苹果为我们提供的两个子类 NSInvocationOperation，NSBlockOperation和自定义继承自NSOperation的子类。
+NSInvocationOperation 直接创建一个NSInvocationOperation的对象，然后调用start方法会直接在主线程执行：
+NSBlockOperation的用法与NSInvocationOperation相同，只是创建的方式不同，它不需要去调用方法，而是直接使用代码块,显得更方便。这也使得NSBlockOperation比NSInvocationOperation更加流行。
+
+NSOperationQueue支持的高级操作有：队列的挂起，队列的取消，添加操作的依赖关系和设置最大并发数。
+暂停继续(对队列的暂停和继续)，挂起的是队列，不会影响已经在执行的操作 需要 self.opQueue.suspended = !self.opQueue.isSuspended;
+[op2 addDependency:op1];
+  [op3 addDependency:op2];
+//  [op1 addDependency:op3];  一定不能出现循环依赖
+
+  //waitUntilFinished  类似GCD中的调度组的通知
+  //NO不等待，直接执行输出come here
+  //YES等待任务执行完再执行输出come here
+  [self.opQueue addOperations:@[op1,op2] waitUntilFinished:YES];
+
+dispatch_barrier_async 栅栏函数
+dispatch_barrier_async函数会等待追加到Concurrent Dispatch Queue上的并行执行的处理全部结束之后，再将指定的处理追加到该Concurrent Dispatch Queue中。
+
+dispatch_apply 该函数是dispatch_sync函数和Dispatch Group的关联API。按照指定的次数将指定的Block追加到指定的Dispatch Queue中，并等待全部处理执行结束
+
+GCD 信号量：dispatch_semaphore
+
+# 常用的第三方库
+YYCache
+YYCache：提供了最外层的接口，调用了YYMemoryCache与YYDiskCache的相关方法。
+YYMemoryCache：负责处理容量小，相对高速的内存缓存。线程安全，支持自动和手动清理缓存等功能。
+_YYLinkedMap：YYMemoryCache使用的双向链表类。
+_YYLinkedMapNode：是_YYLinkedMap使用的节点类。
+YYDiskCache：负责处理容量大，相对低速的磁盘缓存。线程安全，支持异步操作，自动和手动清理缓存等功能。
+YYKVStorage：YYDiskCache的底层实现类，用于管理磁盘缓存。
+YYKVStorageItem：内置在YYKVStorage中，是YYKVStorage内部用于封装某个缓存的类。
+
+LRU缓存替换策略的核心在于如果某个缓存访问的频率越高，就认定用户在将来越有可能访问这个缓存。 所以在这个算法中，将那些最新访问（写入），最多次被访问的缓存移到最前面，然后那些很早之前写入，不经常访问的缓存就被自动放在了后面
+在YYMemoryCache中，使用了双向链表这个数据结构来保存这些缓存：
+当写入一个新的缓存时，要把这个缓存节点放在链表头部，并且并且原链表头部的缓存节点要变成现在链表的第二个缓存节点。
+当访问一个已有的缓存时，要把这个缓存节点移动到链表头部，原位置两侧的缓存要接上，并且原链表头部的缓存节点要变成现在链表的第二个缓存节点。
+（根据清理维度）自动清理缓存时，要从链表的最后端逐个清理。
+这样一来，就可以保证链表前端的缓存是最近写入过和经常访问过的。而且该算法总是从链表的最后端删除缓存，这也就保证了留下的都是一些“比较新鲜的”缓存。
+
+YYDiskCache
+YYDiskCache负责处理容量大，相对低速的磁盘缓存。线程安全，支持异步操作。作为YYCache的第二级缓存，它与第一级缓存YYMemoryCache的相同点是：
+
+都具有查询，写入，读取，删除缓存的接口。
+不直接操作缓存，也是间接地通过另一个类（YYKVStorage）来操作缓存。
+它使用LRU算法来清理缓存。
+支持按 cost，count 和 age 这三个维度来清理不符合标准的缓存。
+它与YYMemoryCache不同点是：
+根据缓存数据的大小来采取不同的形式的缓存：
+数据库sqlite: 针对小容量缓存，缓存的data和元数据都保存在数据库里。
+文件+数据库的形式: 针对大容量缓存，缓存的data写在文件系统里，其元数据保存在数据库里。
+
+保证线程安全的方案
+我相信对于某个设计来说，它的产生一定是基于某种个特定问题下的某个场景的
+由上文可以看出：
+
+YYMemoryCache 使用了 pthread_mutex 线程锁（互斥锁）来确保线程安全
+YYDiskCache 则选择了更适合它的 dispatch_semaphore。
+
+异步释放对象的技巧
+为了异步将某个对象释放掉，可以通过在GCD的block里面给它发个消息来实现。这个技巧在该框架中很常见，举一个删除一个内存缓存的例子
+
+内存警告和进入后台的监听
+YYCache默认在收到内存警告和进入后台时，自动清除所有内存缓存。所以在YYMemoryCache的初始化方法里，我们可以看到这两个监听的动作
+
+SDWebImage
+对SDWebImage并不会陌生，这个框架通过给UIImageView和UIButton添加分类，实现一个异步下载图片并且支持缓存的功能。
+这个框架的核心类是SDWebImageManger，在外部有UIImageView+WebCache 和 UIButton+WebCache 为下载图片的操作提供接口。内部有SDWebImageManger负责处理和协调 SDWebImageDownloader 和 SDWebImageCache：SDWebImageDownloader负责具体的下载任务，SDWebImageCache负责关于缓存的工作：添加，删除，查询缓存。
+SDWebImageManager 的图片加载方法 downloadImageWithURL:options:progress:completed: 中会先拿图片缓存的 key （这个 key 默认是图片 URL）去 SDImageCache 单例中读取内存缓存，如果有，就返回给 SDWebImageManager；如果内存缓存没有，就开启异步线程，拿经过 MD5 处理的 key 去读取磁盘缓存，如果找到磁盘缓存了，就同步到内存缓存中去，然后再返回给 SDWebImageManager。
+如果内存缓存和磁盘缓存中都没有，SDWebImageManager 就会调用 SDWebImageDownloader 单例的 -downloadImageWithURL: options: progress: completed: 方法去下载，该会先将传入的 progressBlock 和 completedBlock 保存起来，并在第一次下载该 URL 的图片时，创建一个 NSMutableURLRequest 对象和一个 SDWebImageDownloaderOperation 对象，并将该 SDWebImageDownloaderOperation 对象添加到 SDWebImageDownloader 的downloadQueue 来启动异步下载任务。
+SDImageCache 的内存缓存是通过一个继承 NSCache 的 AutoPurgeCache 类来实现的，NSCache 是一个类似于 NSMutableDictionary 存储 key-value 的容器，主要有以下几个特点：
+自动删除机制：当系统内存紧张时，NSCache会自动删除一些缓存对象
+线程安全：从不同线程中对同一个 NSCache 对象进行增删改查时，不需要加锁
+不同于 NSMutableDictionary，NSCache存储对象时不会对 key 进行 copy 操作
+
+在我们使用 UIImage 的时候，创建的图片通常不会直接加载到内存，而是在渲染的时候再进行解压并加载到内存。这就会导致 UIImage 在渲染的时候效率上不是那么高效。为了提高效率通过 decodedImageWithImage方法把图片提前解压加载到内存，这样这张新图片就不再需要重复解压了，提高了渲染效率。这是一种空间换时间的做法。
+SDWebImageDecoder还提供了另外一个核心功能——图片压缩。如果图片的体积大于特定值，则decoder会对图片进行压缩，防止内存溢出。
