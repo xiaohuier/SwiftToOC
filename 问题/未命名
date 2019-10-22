@@ -640,3 +640,14 @@ CoreAnimation作为一个复合引擎，将不同的视图层组合在屏幕中�
 通常，我们操作的是模型树，在重绘周期最后，我们会将模型树相关内容（层次结构、图层属性和动画）序列化，通过IPC传递给专门负责屏幕渲染的渲染进程。渲染进程拿到数据并反序列化出树状结构--呈现树。这个呈现图层实际上是模型图层的复制，但是它的属性值代表了在任何指定时刻当前外观效果。换句话说，你可以通过呈现图层的值来获取当前屏幕上真正显示出来的值。
 
 我们可以通过CALayer的-presentationLayer方法来访问对应的呈现树图层。
+# avplayer
+avaudioplayer 音频播放
+avaudiosession 设置播放模式
+音频录制 avaudiorecorder
+avasset 定义了一个资源，with url，远端或者本地可以查询到时长，创建日期，总时长等
+资源的时常需要在头里面设置，如果没有就要解析文件。所以，需要异步加载
+loadvalueasynchronouslayforkey方法
+查找元数据，avmetadataitem
+avplayeritem的status，会由unknow到readytoplay，需要kvo status属性
+ios 提供2中精确知道时间的办法 addperiodictimeobserver
+avplayer播放完成会发送通知

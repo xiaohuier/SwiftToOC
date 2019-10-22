@@ -156,10 +156,10 @@ CALayer为这个方案提供了对应的解法：shouldRasterize。一旦被设�
 
 但是对于一些情况，如文字（CoreText使用CoreGraphics渲染）和图片（ImageIO）渲染，由于GPU并不擅长做这些工作，不得不先由CPU来处理好以后，再把结果作为texture传给GPU。除此以外，有时候也会遇到GPU实在忙不过来的情况，而CPU相对空闲（GPU瓶颈），这时可以让CPU分担一部分工作，提高整体效率。
 
-
 4：如何降低APP包的大小
 5：日常如何检查内存泄露？
 6：APP启动时间应从哪些方面优化？
+<<<<<<< Updated upstream
 
 
 Swift系列面试题
@@ -296,3 +296,5 @@ subscript的语法类似于实例方法、计算属性，本质就是方法(函�
 
 git rebase 和merge
 rebase会把分支提交记录也合并上主分支
+=======
+>>>>>>> Stashed changes
