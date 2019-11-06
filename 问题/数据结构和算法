@@ -42,15 +42,36 @@ return n &&(n&(n-1))
 1.7 Count Primes（质数的个数）
 我们从2开始遍历到根号n，先找到第一个质数2，然后将其所有的倍数全部标记出来，然后到下一个质数3，标记其所有倍数，一次类推，直到根号n，此时数组中未被标记的数字就是质数。我们需要一个 n-1 长度的 bool 型数组来记录每个数字是否被标记，长度为 n-1 的原因是题目说是小于n的质数个数，并不包括n。
 2. Algorithm Implementation Questions (算法实现题)
-2.0 Sort Test Demo（排序测试用例）
 
 2.1 Bubble Sort Implementation（冒泡排序实现）
+从最后一个数字反向遍历，都和上一个数字做对比，如果小，则交换顺序，知道第一个数字
+for j = count , j > 0 , j --
+{
+If j.value < j-1.value {
+swap()
+}
+}
+这是进行了一次，然后for i 。。< count 循环
+
+如果一次循环，一个数据都没交换，那就证明没有交换的了
 
 2.2 Selection Sort Implementation（选择排序实现）
-
+每次找出最小的那个，然后放到0的位置
+for i = 0 ,I++ {
+和min做对比，然后swap min和0
+}
 2.3 Insertion Sort Implementation（插入排序实现）
-
+一个个的从数组中取值，然后插进入顺序中
 2.4 Quick Sort Implementation（快速排序实现）
+选择一个关键数字，然后分别把比他大的和小的分别放到2边，然后递归这个过程
+sort (array, current ,islow) {
+If islow < else >
+If current islow number {
+Sort()
+}
+}
+
+希尔排序，把数组分割成若干个子数组，然后子数组分别排序，然后对分割后的子数组进行一个插入排序
 
 3. Linked List Questions（链表相关问题）
 3.0 Linked List Test Demo（链表类，测试用例）
@@ -203,3 +224,6 @@ head 后面有值但和 head 的值不等，那么就递归后面一个结点，
 从数组中选一个元素当基准
 然后把必基准元素小的和大的分成2份 进行分区
 然后分区递归执行上面的，知道还剩3个元素
+
+
+循环有序数组查找，链表整数相加，链表反转，2个栈实现队列，平衡二叉树，2个有序数组中第K大的，最小子数列
