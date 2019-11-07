@@ -333,8 +333,36 @@ PPTV crash 分类
 @autoreleasepool {}
 AutoreleasePool 是一个先进后出的数据结构，栈 自动释放池就是一个以AutoreleasePoolPage为节点的双向链表
 objc_autoreleasePoolPush()和objc_autoreleasePoolPop(...)实际上会调用到AutoreleasePoolPage类的push()和pop()方法，
-pop 时会将这个obj指针的地址传入进去。pop 的逻辑是把 hotPage 里面装的对象依次移除并发送 release 消息（后面会详细分析），当前 page 移除完了，继续移除 parent 节点内的对象，以此反复，而移除对象操作何时停止就是到这个obj指针的地址。
+
+objc_autoreleasePoolPush
+.当前 page 存在且没有满时，直接将对象添加到当前 page 中。
+2.当前 page 存在且已满时，创建一个新的 page ，并将对象添加到新创建的 page 中，然后将这两个链表节点链接。
+3.当前 page 不存在时，创建第一个 page ，并将对象添加到新创建的 page 中。
+
+pop 时会将这个obj指针的地址传入进去。pop 的逻辑是把 hotPage 里面装的对象依次移除并发送 release 消息（后面会详细分析），当前 page 移除完了，继续移除 parent 节点内的对象，以此反复，而移除对象操作何时停止就是添加的节点POOL_BOUNDARY。
 所以，push 操作加入一个 POOL_BOUNDARY 实际上就是加一个边界，pop 操作时根据边界判断范围，这就是一个入栈与出栈的过程。
+
+# alloc/retain/release/dealloc
+retainCount
+extra_rc 就是用于保存自动引用计数的标志位，是在 isa_t 结构体中，共有8位。它存储的是对象本身之外的引用计数的数量，所以获取总数的时候要加 1。但 extra_rc 可能不足以存储引用计数，这时候 sidetable 就派上用场了。
+has_sidetable_rc
+has_sidetable_rc 是用于标志是否通过 sidetable 存储引用计数的标志。
+sidetable_getExtraRC_nolock
+sidetable_getExtraRC_nolock 函数是用于从 sidetable 中获取引用计数信息的方法
+
+SIDE_TABLE_RC_ONE (1UL<<2) （表示对象所在内存的第 3 位），存放引用计数数值（其实第三位之后都用来存放引用计数数值）。
+
+# weak
+SideTables一个哈希表，以对象的地址为key，保存着一个sidetable
+因为哈希表会冲突，所以sidetable里面还有一个哈希表RefcountMap是要通过find(key)来找到精确的元素
+weak_entries则是通过循环遍历来找到对应的entry。
+weak_entry_t的结构包含3个部分
+1,referent:
+被指对象的地址。前面循环遍历查找的时候就是判断目标地址是否和他相等。
+2,referrers
+可变数组,里面保存着所有指向这个对象的弱引用的地址。当这个对象被释放的时候，referrers里的所有指针都会被设置成nil。
+3,inline_referrers
+只有4个元素的数组，默认情况下用它来存储弱引用的指针。当大于4个的时候使用referrers来存储指针。
 
 # 性能问题
 卡顿
